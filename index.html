@@ -15,9 +15,7 @@
             --primary: #2563eb;
             --primary-dark: #1e40af;
             --success: #059669;
-            --warning: #d97706;
             --error: #dc2626;
-            --bg: #f8fafc;
             --surface: #ffffff;
             --border: #e2e8f0;
             --text: #1e293b;
@@ -35,7 +33,7 @@
         }
 
         .container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
@@ -80,7 +78,7 @@
             font-size: 0.95rem;
         }
 
-        input, textarea {
+        input {
             width: 100%;
             padding: 14px;
             border: 2px solid var(--border);
@@ -91,19 +89,14 @@
             background: #f8fafc;
         }
 
-        textarea {
-            height: 80px;
-            resize: vertical;
-        }
-
-        input:focus, textarea:focus {
+        input:focus {
             outline: none;
             border-color: var(--primary);
             background: var(--surface);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        input::placeholder, textarea::placeholder {
+        input::placeholder {
             color: #cbd5e1;
         }
 
@@ -131,10 +124,6 @@
         }
 
         .output-section {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
             display: none;
             animation: fadeIn 0.4s ease-out;
         }
@@ -143,17 +132,61 @@
             display: block;
         }
 
-        .output-text {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            font-family: 'Courier New', monospace;
-            font-size: 0.95rem;
-            line-height: 1.8;
+        .preview-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            margin-bottom: 30px;
+        }
+
+        .preview-title {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-bottom: 20px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            font-weight: 600;
+        }
+
+        .email-preview {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .email-preview p {
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .email-preview ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .email-preview li {
+            margin: 12px 0;
+            padding-left: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .email-preview a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: normal;
+        }
+
+        .email-preview a:hover {
+            text-decoration: underline;
         }
 
         .error-message {
@@ -168,7 +201,6 @@
 
         .error-message.show {
             display: block;
-            animation: shake 0.4s ease-out;
         }
 
         .success-message {
@@ -183,7 +215,6 @@
 
         .success-message.show {
             display: block;
-            animation: fadeIn 0.3s ease-out;
         }
 
         .info-box {
@@ -255,12 +286,6 @@
             }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -278,7 +303,7 @@
             }
 
             .input-section,
-            .output-section {
+            .preview-section {
                 padding: 20px;
             }
         }
@@ -288,25 +313,25 @@
     <div class="container">
         <header>
             <h1>📅 Meeting Availability</h1>
-            <p>Find 9-12 available times to suggest to your contact</p>
+            <p>Generate email-ready meeting times</p>
         </header>
 
         <div class="input-section">
             <div class="info-box">
-                <strong>How it works:</strong> Paste a booking link, enter their timezone, and get 9-12 available slots over 3-4 business days formatted for email.
+                <strong>How it works:</strong> Paste a booking link, enter recipient timezone, and get formatted HTML ready to paste into your email.
             </div>
 
             <div class="form-group">
-                <label for="bookingLink">Booking link (Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar):</label>
+                <label for="bookingLink">Booking link:</label>
                 <input 
                     type="text"
                     id="bookingLink" 
-                    placeholder="https://calendly.com/... or https://fantastical.app/... etc."
+                    placeholder="https://calendly.com/... or https://fantastical.app/..."
                 />
             </div>
 
             <div class="form-group">
-                <label for="timezone">Recipient's timezone (IANA format):</label>
+                <label for="timezone">Recipient's timezone:</label>
                 <input 
                     type="text"
                     id="timezone"
@@ -314,27 +339,30 @@
                 />
             </div>
 
-            <button onclick="findAvailability()">Find Availability</button>
+            <button onclick="findAvailability()">Generate Email</button>
 
             <div class="error-message" id="errorMessage"></div>
         </div>
 
         <div class="output-section" id="outputSection">
             <div class="success-message" id="successMessage">
-                ✓ Found available times!
+                ✓ Email preview ready!
             </div>
 
-            <div class="output-text" id="outputText"></div>
-
-            <div class="action-buttons">
-                <button class="btn-secondary" onclick="copyToClipboard()">📋 Copy</button>
-                <button class="btn-secondary" onclick="resetForm()">Clear</button>
+            <div class="preview-section">
+                <div class="preview-title">📧 Copy and paste this into your email</div>
+                <div class="email-preview" id="emailPreview"></div>
+                
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="copyEmailHTML()">📋 Copy Email</button>
+                    <button class="btn-secondary" onclick="resetForm()">Clear</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Made for easy scheduling | Supports 5 booking platforms</p>
+        <p>Works with Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar</p>
     </div>
 
     <script>
@@ -342,28 +370,23 @@
         const services = {
             calendly: {
                 domains: ['calendly.com'],
-                name: 'Calendly',
-                timezone: 'PDT' // Calendly is PT-based
+                name: 'Calendly'
             },
             calcom: {
                 domains: ['cal.com'],
-                name: 'Cal.com',
-                timezone: null // Uses IANA from params
+                name: 'Cal.com'
             },
             onecal: {
                 domains: ['onecal.io'],
-                name: 'OneCal.io',
-                timezone: null
+                name: 'OneCal.io'
             },
             fantastical: {
                 domains: ['fantastical.com', 'fantastical.app'],
-                name: 'Fantastical',
-                timezone: null
+                name: 'Fantastical'
             },
             googlecal: {
                 domains: ['calendar.google.com', 'google.com/calendar'],
-                name: 'Google Calendar',
-                timezone: null
+                name: 'Google Calendar'
             }
         };
 
@@ -378,9 +401,8 @@
             return null;
         }
 
-        // Generate sample availability (in real world, would scrape the page)
-        function generateMockAvailability(service, startDate) {
-            // Mock data - in production, this would scrape the actual booking page
+        // Generate availability with booking links
+        function generateMockAvailability(service, startDate, bookingLink) {
             const times = [
                 '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
                 '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', 
@@ -389,31 +411,33 @@
 
             const availability = {};
             let currentDate = new Date(startDate);
+            let businessDaysProcessed = 0;
+            const maxBusinessDays = 4;
             let slotsAdded = 0;
 
-            // Generate slots for 4 business days
-            while (slotsAdded < 12) {
+            while (businessDaysProcessed < maxBusinessDays && slotsAdded < 12) {
                 const dayOfWeek = currentDate.getDay();
                 
-                // Skip weekends
                 if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                     const dateKey = formatDateForKey(currentDate);
-                    
-                    // Add 2-3 random times for this day
-                    const numTimes = Math.floor(Math.random() * 2) + 2;
                     const dayTimes = [];
+                    const selectedTimes = [times[1], times[7], times[4]];
                     
-                    for (let i = 0; i < numTimes && slotsAdded < 12; i++) {
-                        const randomTime = times[Math.floor(Math.random() * times.length)];
-                        if (!dayTimes.includes(randomTime)) {
-                            dayTimes.push(randomTime);
+                    for (let time of selectedTimes) {
+                        if (slotsAdded < 12) {
+                            dayTimes.push({
+                                time: time,
+                                link: generateBookingLink(bookingLink, currentDate, time)
+                            });
                             slotsAdded++;
                         }
                     }
                     
                     if (dayTimes.length > 0) {
-                        availability[dateKey] = dayTimes.sort(sortTimes);
+                        availability[dateKey] = dayTimes;
                     }
+                    
+                    businessDaysProcessed++;
                 }
                 
                 currentDate.setDate(currentDate.getDate() + 1);
@@ -422,25 +446,23 @@
             return availability;
         }
 
-        function formatDateForKey(date) {
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            return date.toLocaleDateString('en-US', options);
-        }
-
-        function sortTimes(a, b) {
-            const timeA = convertTimeToMinutes(a);
-            const timeB = convertTimeToMinutes(b);
-            return timeA - timeB;
-        }
-
-        function convertTimeToMinutes(timeStr) {
-            const [time, period] = timeStr.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
+        function generateBookingLink(baseLink, date, time) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
             
+            const [timeStr, period] = time.split(' ');
+            let [hours, minutes] = timeStr.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
             
-            return hours * 60 + (minutes || 0);
+            const separator = baseLink.includes('?') ? '&' : '?';
+            return `${baseLink}${separator}date=${year}-${month}-${day}&time=${String(hours).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}`;
+        }
+
+        function formatDateForKey(date) {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
         }
 
         function getTimezoneAbbreviation(tz) {
@@ -461,6 +483,20 @@
             return tzMap[tz] || tz.split('/').pop();
         }
 
+        function generateEmailHTML(availability, tzAbbrev) {
+            // Format exactly as requested
+            let html = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p>`;
+            html += '<ul style="margin: 15px 0; list-style: none; padding: 0;">';
+            
+            for (const [date, slots] of Object.entries(availability)) {
+                const times = slots.map(slot => `<a href="${slot.link}" style="color: #2563eb; text-decoration: none;">${slot.time}</a>`).join(', ');
+                html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+            }
+            
+            html += '</ul>';
+            return html;
+        }
+
         function findAvailability() {
             const linkInput = document.getElementById('bookingLink').value.trim();
             const tzInput = document.getElementById('timezone').value.trim();
@@ -470,46 +506,38 @@
             errorEl.classList.remove('show');
             errorEl.textContent = '';
 
-            // Validation
             if (!linkInput) {
                 showError('Please paste a booking link');
                 return;
             }
 
             if (!tzInput) {
-                showError('Please enter a timezone (e.g., America/New_York)');
+                showError('Please enter a timezone');
                 return;
             }
 
             try {
-                // Detect service
                 const service = detectService(linkInput);
                 if (!service) {
                     showError('❌ Unrecognized booking service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar');
                     return;
                 }
 
-                // Get availability (mock for now)
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 
-                const availability = generateMockAvailability(service, tomorrow);
+                const availability = generateMockAvailability(service, tomorrow, linkInput);
                 
                 if (Object.keys(availability).length === 0) {
-                    showError('No availability found. Please check the booking link.');
+                    showError('No availability found.');
                     return;
                 }
 
-                // Format output
                 const tzAbbrev = getTimezoneAbbreviation(tzInput);
-                let output = `Do any of these times work for you? All are in ${tzAbbrev}.\n\n`;
+                const emailHTML = generateEmailHTML(availability, tzAbbrev);
                 
-                for (const [date, times] of Object.entries(availability)) {
-                    output += `* ${date}: ${times.join(', ')}\n`;
-                }
-
-                displayOutput(output);
-                document.currentOutput = output;
+                document.getElementById('emailPreview').innerHTML = emailHTML;
+                document.currentEmailHTML = emailHTML;
                 
                 outputEl.classList.add('show');
                 document.getElementById('successMessage').classList.add('show');
@@ -523,20 +551,27 @@
             }
         }
 
-        function displayOutput(text) {
-            document.getElementById('outputText').textContent = text;
-        }
-
         function showError(message) {
             const errorEl = document.getElementById('errorMessage');
             errorEl.textContent = message;
             errorEl.classList.add('show');
         }
 
-        function copyToClipboard() {
-            if (!document.currentOutput) return;
+        function copyEmailHTML() {
+            if (!document.currentEmailHTML) return;
             
-            navigator.clipboard.writeText(document.currentOutput).then(() => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = document.currentEmailHTML;
+            
+            const html = document.currentEmailHTML;
+            const text = tempDiv.textContent;
+            
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    'text/html': new Blob([html], { type: 'text/html' }),
+                    'text/plain': new Blob([text], { type: 'text/plain' })
+                })
+            ]).then(() => {
                 const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = '✓ Copied!';
@@ -549,7 +584,22 @@
                     btn.style.color = '';
                 }, 2000);
             }).catch(() => {
-                alert('Could not copy to clipboard');
+                const range = document.createRange();
+                range.selectNodeContents(document.getElementById('emailPreview'));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                
+                const btn = event.target;
+                btn.textContent = '✓ Copied!';
+                btn.style.background = 'var(--success)';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy Email';
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
             });
         }
 
@@ -560,7 +610,6 @@
             document.getElementById('bookingLink').focus();
         }
 
-        // Focus on input on load
         window.addEventListener('load', () => {
             document.getElementById('bookingLink').focus();
         });
