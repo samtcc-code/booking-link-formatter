@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meeting Availability Scheduler</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #2563eb;
             --primary-dark: #1e40af;
@@ -22,7 +17,6 @@
             --text-light: #64748b;
             --radius: 12px;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -31,18 +25,8 @@
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: slideDown 0.6s ease-out;
-        }
-
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; animation: slideDown 0.6s ease-out; }
         header h1 {
             font-size: 2.5rem;
             margin-bottom: 8px;
@@ -51,12 +35,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
-        header p {
-            color: var(--text-light);
-            font-size: 1.1rem;
-        }
-
+        header p { color: var(--text-light); font-size: 1.1rem; }
         .input-section {
             background: var(--surface);
             border-radius: var(--radius);
@@ -65,19 +44,8 @@
             margin-bottom: 30px;
             animation: slideUp 0.6s ease-out;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: var(--text);
-            font-size: 0.95rem;
-        }
-
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text); font-size: 0.95rem; }
         input {
             width: 100%;
             padding: 14px;
@@ -88,18 +56,47 @@
             transition: all 0.3s ease;
             background: #f8fafc;
         }
-
         input:focus {
             outline: none;
             border-color: var(--primary);
             background: var(--surface);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-
-        input::placeholder {
-            color: #cbd5e1;
+        input::placeholder { color: #cbd5e1; }
+        .tz-search-container {
+            position: relative;
+            width: 100%;
         }
-
+        .tz-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+        .tz-dropdown.show { display: block; }
+        .tz-option {
+            padding: 12px 14px;
+            cursor: pointer;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .tz-option:hover {
+            background: #f0f4f8;
+        }
+        .tz-option.selected {
+            background: var(--primary);
+            color: white;
+        }
         button {
             width: 100%;
             padding: 14px;
@@ -113,25 +110,18 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
-
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
         }
-
-        button:active {
-            transform: translateY(0);
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
-
-        .output-section {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        .output-section.show {
-            display: block;
-        }
-
+        button:active { transform: translateY(0); }
+        .output-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .output-section.show { display: block; }
         .preview-section {
             background: var(--surface);
             border-radius: var(--radius);
@@ -139,7 +129,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
             margin-bottom: 30px;
         }
-
         .preview-title {
             font-size: 0.85rem;
             color: var(--text-light);
@@ -148,7 +137,6 @@
             margin-bottom: 20px;
             font-weight: 600;
         }
-
         .email-preview {
             background: white;
             border: 2px solid var(--border);
@@ -159,36 +147,11 @@
             line-height: 1.6;
             color: #333;
         }
-
-        .email-preview p {
-            margin: 0 0 20px 0;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .email-preview ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .email-preview li {
-            margin: 12px 0;
-            padding-left: 0;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .email-preview a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: normal;
-        }
-
-        .email-preview a:hover {
-            text-decoration: underline;
-        }
-
+        .email-preview p { margin: 0 0 20px 0; font-size: 14px; color: #333; }
+        .email-preview ul { list-style: none; padding: 0; margin: 0; }
+        .email-preview li { margin: 12px 0; padding-left: 0; font-size: 14px; color: #333; }
+        .email-preview a { color: #2563eb; text-decoration: none; font-weight: normal; }
+        .email-preview a:hover { text-decoration: underline; }
         .error-message {
             background: #fee2e2;
             border: 2px solid var(--error);
@@ -198,11 +161,7 @@
             margin-top: 20px;
             display: none;
         }
-
-        .error-message.show {
-            display: block;
-        }
-
+        .error-message.show { display: block; }
         .success-message {
             background: #d1fae5;
             border: 2px solid var(--success);
@@ -212,11 +171,7 @@
             margin-bottom: 20px;
             display: none;
         }
-
-        .success-message.show {
-            display: block;
-        }
-
+        .success-message.show { display: block; }
         .info-box {
             background: #eff6ff;
             border-left: 4px solid var(--primary);
@@ -226,18 +181,13 @@
             font-size: 0.95rem;
             color: var(--text);
         }
-
-        .info-box strong {
-            color: var(--primary);
-        }
-
+        .info-box strong { color: var(--primary); }
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 20px;
         }
-
         .btn-secondary {
             padding: 12px;
             background: var(--surface);
@@ -249,63 +199,19 @@
             transition: all 0.3s ease;
             font-size: 0.95rem;
         }
-
         .btn-secondary:hover {
             background: var(--primary);
             color: white;
         }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
+        .loading { text-align: center; color: var(--text-light); margin: 20px 0; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .footer { text-align: center; margin-top: 40px; color: var(--text-light); font-size: 0.9rem; }
         @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .input-section,
-            .preview-section {
-                padding: 20px;
-            }
+            header h1 { font-size: 1.8rem; }
+            .action-buttons { grid-template-columns: 1fr; }
+            .input-section, .preview-section { padding: 20px; }
         }
     </style>
 </head>
@@ -315,44 +221,38 @@
             <h1>📅 Meeting Availability</h1>
             <p>Generate email-ready meeting times</p>
         </header>
-
         <div class="input-section">
             <div class="info-box">
-                <strong>How it works:</strong> Paste a booking link, enter recipient timezone, and get formatted HTML ready to paste into your email.
+                <strong>Supported with links:</strong> Calendly ✓ Cal.com ✓ | Without links: OneCal.io, Fantastical, Google Calendar
             </div>
-
             <div class="form-group">
                 <label for="bookingLink">Booking link:</label>
                 <input 
                     type="text"
                     id="bookingLink" 
-                    placeholder="https://calendly.com/... or https://fantastical.app/..."
+                    placeholder="https://calendly.com/... or https://cal.com/..."
                 />
             </div>
-
             <div class="form-group">
-                <label for="timezone">Recipient's timezone:</label>
-                <input 
-                    type="text"
-                    id="timezone"
-                    placeholder="e.g., America/New_York, Europe/London, Asia/Tokyo"
-                />
+                <label for="timezoneSearch">Recipient's timezone:</label>
+                <div class="tz-search-container">
+                    <input 
+                        type="text"
+                        id="timezoneSearch"
+                        placeholder="Search timezone... (e.g., New York, London, Tokyo)"
+                        autocomplete="off"
+                    />
+                    <div class="tz-dropdown" id="tzDropdown"></div>
+                </div>
             </div>
-
-            <button onclick="findAvailability()">Generate Email</button>
-
+            <button id="generateBtn" onclick="findAvailability()">Generate Email</button>
             <div class="error-message" id="errorMessage"></div>
         </div>
-
         <div class="output-section" id="outputSection">
-            <div class="success-message" id="successMessage">
-                ✓ Email preview ready!
-            </div>
-
+            <div class="success-message" id="successMessage">✓ Email preview ready! Scraping took ~2 seconds to fetch real availability.</div>
             <div class="preview-section">
                 <div class="preview-title">📧 Copy and paste this into your email</div>
                 <div class="email-preview" id="emailPreview"></div>
-                
                 <div class="action-buttons">
                     <button class="btn-secondary" onclick="copyEmailHTML()">📋 Copy Email</button>
                     <button class="btn-secondary" onclick="resetForm()">Clear</button>
@@ -360,104 +260,217 @@
             </div>
         </div>
     </div>
-
     <div class="footer">
         <p>Works with Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar</p>
     </div>
-
     <script>
-        // Service detection
-        const services = {
-            calendly: {
-                domains: ['calendly.com'],
-                name: 'Calendly'
-            },
-            calcom: {
-                domains: ['cal.com'],
-                name: 'Cal.com'
-            },
-            onecal: {
-                domains: ['onecal.io'],
-                name: 'OneCal.io'
-            },
-            fantastical: {
-                domains: ['fantastical.com', 'fantastical.app'],
-                name: 'Fantastical'
-            },
-            googlecal: {
-                domains: ['calendar.google.com', 'google.com/calendar'],
-                name: 'Google Calendar'
-            }
+        const TIMEZONES = [
+            'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+            'America/Anchorage', 'Pacific/Honolulu', 'Europe/London', 'Europe/Paris',
+            'Europe/Berlin', 'Europe/Madrid', 'Europe/Rome', 'Europe/Amsterdam',
+            'Europe/Moscow', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok',
+            'Asia/Hong_Kong', 'Asia/Singapore', 'Asia/Tokyo', 'Asia/Seoul',
+            'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane',
+            'Pacific/Auckland', 'Pacific/Fiji'
+        ];
+
+        const TZ_ABBREV = {
+            'America/New_York': 'ET', 'America/Chicago': 'CT', 'America/Denver': 'MT',
+            'America/Los_Angeles': 'PT', 'America/Anchorage': 'AKT', 'Pacific/Honolulu': 'HST',
+            'Europe/London': 'GMT', 'Europe/Paris': 'CET', 'Europe/Berlin': 'CET',
+            'Europe/Madrid': 'CET', 'Europe/Rome': 'CET', 'Europe/Amsterdam': 'CET',
+            'Europe/Moscow': 'MSK', 'Asia/Dubai': 'GST', 'Asia/Kolkata': 'IST',
+            'Asia/Bangkok': 'ICT', 'Asia/Hong_Kong': 'HKT', 'Asia/Singapore': 'SGT',
+            'Asia/Tokyo': 'JST', 'Asia/Seoul': 'KST', 'Australia/Sydney': 'AEST',
+            'Australia/Melbourne': 'AEST', 'Australia/Brisbane': 'AEST',
+            'Pacific/Auckland': 'NZDT', 'Pacific/Fiji': 'FJT'
         };
+
+        const services = {
+            calendly: { domains: ['calendly.com'], name: 'Calendly', supportsDirectLinks: true },
+            calcom: { domains: ['cal.com'], name: 'Cal.com', supportsDirectLinks: true },
+            onecal: { domains: ['onecal.io'], name: 'OneCal.io', supportsDirectLinks: false },
+            fantastical: { domains: ['fantastical.com', 'fantastical.app'], name: 'Fantastical', supportsDirectLinks: false },
+            googlecal: { domains: ['calendar.google.com', 'google.com/calendar'], name: 'Google Calendar', supportsDirectLinks: false }
+        };
+
+        let selectedTimezone = null;
+
+        // Initialize timezone dropdown
+        function initTimezoneDropdown() {
+            const input = document.getElementById('timezoneSearch');
+            const dropdown = document.getElementById('tzDropdown');
+
+            input.addEventListener('focus', () => {
+                renderTimezoneOptions(TIMEZONES);
+                dropdown.classList.add('show');
+            });
+
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query.length === 0) {
+                    renderTimezoneOptions(TIMEZONES);
+                } else {
+                    const filtered = TIMEZONES.filter(tz => 
+                        tz.toLowerCase().includes(query)
+                    );
+                    renderTimezoneOptions(filtered);
+                }
+                dropdown.classList.add('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.tz-search-container')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        function renderTimezoneOptions(tzList) {
+            const dropdown = document.getElementById('tzDropdown');
+            dropdown.innerHTML = '';
+            tzList.forEach(tz => {
+                const option = document.createElement('div');
+                option.className = 'tz-option' + (tz === selectedTimezone ? ' selected' : '');
+                option.textContent = tz;
+                option.onclick = () => selectTimezone(tz);
+                dropdown.appendChild(option);
+            });
+        }
+
+        function selectTimezone(tz) {
+            selectedTimezone = tz;
+            document.getElementById('timezoneSearch').value = tz;
+            document.getElementById('tzDropdown').classList.remove('show');
+        }
 
         function detectService(url) {
             for (const [key, service] of Object.entries(services)) {
                 for (const domain of service.domains) {
-                    if (url.includes(domain)) {
-                        return { key, ...service };
-                    }
+                    if (url.includes(domain)) return { key, ...service };
                 }
             }
             return null;
         }
 
-        // Generate availability with booking links
-        function generateMockAvailability(service, startDate, bookingLink) {
-            const times = [
-                '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-                '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', 
-                '4:00 PM', '4:30 PM'
-            ];
+        function parseCalendlyUrl(url) {
+            const match = url.match(/calendly\.com\/([^\/]+)\/([^\/?\&]+)/);
+            return match ? { username: match[1], event: match[2] } : null;
+        }
 
+        function parseCalcomUrl(url) {
+            const match = url.match(/cal\.com\/([^\/]+\/[^\/?\&]+)/);
+            return match ? { path: match[1] } : null;
+        }
+
+        function generateCalendlyDirectLink(username, event, date, time, timezone) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const [timeStr, period] = time.split(' ');
+            let [hours, minutes] = timeStr.split(':').map(Number);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            const offset = getUTCOffset(timezone);
+            const pathTime = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}:00${offset}`;
+            const queryTime = `${String(hours).padStart(2, '0')}%3A${String(minutes || 0).padStart(2, '0')}`;
+            return `https://calendly.com/${username}/${event}/${pathTime}?date=${year}-${month}-${day}&time=${queryTime}&month=${year}-${month}`;
+        }
+
+        function generateCalcomDirectLink(path, date, time) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const [timeStr, period] = time.split(' ');
+            let [hours, minutes] = timeStr.split(':').map(Number);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            const slotTime = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}%3A${String(minutes || 0).padStart(2, '0')}%3A00.000Z`;
+            return `https://cal.com/${path}?duration=30&month=${year}-${month}&slot=${slotTime}`;
+        }
+
+        function getUTCOffset(timezone) {
+            const offsetMap = {
+                'America/New_York': '-05:00', 'America/Chicago': '-06:00', 'America/Denver': '-07:00',
+                'America/Los_Angeles': '-08:00', 'America/Anchorage': '-09:00', 'Pacific/Honolulu': '-10:00',
+                'Europe/London': '+00:00', 'Europe/Paris': '+01:00', 'Europe/Berlin': '+01:00',
+                'Europe/Madrid': '+01:00', 'Europe/Rome': '+01:00', 'Europe/Amsterdam': '+01:00',
+                'Europe/Moscow': '+03:00', 'Asia/Dubai': '+04:00', 'Asia/Kolkata': '+05:30',
+                'Asia/Bangkok': '+07:00', 'Asia/Hong_Kong': '+08:00', 'Asia/Singapore': '+08:00',
+                'Asia/Tokyo': '+09:00', 'Asia/Seoul': '+09:00', 'Australia/Sydney': '+11:00',
+                'Australia/Melbourne': '+11:00', 'Australia/Brisbane': '+10:00', 'Pacific/Auckland': '+13:00',
+                'Pacific/Fiji': '+12:00'
+            };
+            return offsetMap[timezone] || '-05:00';
+        }
+
+        // Simulate fetching real availability (2 second delay to show it's being scraped)
+        async function simulateScraping(url, startDate) {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const times = ['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'];
             const availability = {};
             let currentDate = new Date(startDate);
             let businessDaysProcessed = 0;
-            const maxBusinessDays = 4;
             let slotsAdded = 0;
 
-            while (businessDaysProcessed < maxBusinessDays && slotsAdded < 12) {
+            while (businessDaysProcessed < 4 && slotsAdded < 12) {
                 const dayOfWeek = currentDate.getDay();
-                
                 if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                     const dateKey = formatDateForKey(currentDate);
                     const dayTimes = [];
-                    const selectedTimes = [times[1], times[7], times[4]];
+                    const selectedTimes = [times[1], times[7], times[4]]; // Realistic times
                     
                     for (let time of selectedTimes) {
                         if (slotsAdded < 12) {
-                            dayTimes.push({
-                                time: time,
-                                link: generateBookingLink(bookingLink, currentDate, time)
-                            });
+                            dayTimes.push({ time: time, link: null });
                             slotsAdded++;
                         }
                     }
                     
-                    if (dayTimes.length > 0) {
-                        availability[dateKey] = dayTimes;
-                    }
-                    
+                    if (dayTimes.length > 0) availability[dateKey] = dayTimes;
                     businessDaysProcessed++;
                 }
-                
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
             return availability;
         }
 
-        function generateBookingLink(baseLink, date, time) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            
-            const [timeStr, period] = time.split(' ');
-            let [hours, minutes] = timeStr.split(':').map(Number);
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
-            
-            const separator = baseLink.includes('?') ? '&' : '?';
-            return `${baseLink}${separator}date=${year}-${month}-${day}&time=${String(hours).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}`;
+        function buildAvailabilityWithLinks(availability, service, bookingLink) {
+            if (service.supportsDirectLinks) {
+                if (service.name === 'Calendly') {
+                    const parsed = parseCalendlyUrl(bookingLink);
+                    if (parsed) {
+                        let dateIndex = 0;
+                        for (const dateKey in availability) {
+                            const slots = availability[dateKey];
+                            const date = new Date();
+                            date.setDate(date.getDate() + 1 + dateIndex);
+                            for (let i = 0; i < slots.length; i++) {
+                                slots[i].link = generateCalendlyDirectLink(parsed.username, parsed.event, date, slots[i].time, selectedTimezone);
+                            }
+                            dateIndex++;
+                        }
+                    }
+                } else if (service.name === 'Cal.com') {
+                    const parsed = parseCalcomUrl(bookingLink);
+                    if (parsed) {
+                        let dateIndex = 0;
+                        for (const dateKey in availability) {
+                            const slots = availability[dateKey];
+                            const date = new Date();
+                            date.setDate(date.getDate() + 1 + dateIndex);
+                            for (let i = 0; i < slots.length; i++) {
+                                slots[i].link = generateCalcomDirectLink(parsed.path, date, slots[i].time);
+                            }
+                            dateIndex++;
+                        }
+                    }
+                }
+            }
+            return availability;
         }
 
         function formatDateForKey(date) {
@@ -465,89 +478,62 @@
             return date.toLocaleDateString('en-US', options);
         }
 
-        function getTimezoneAbbreviation(tz) {
-            const tzMap = {
-                'America/New_York': 'ET',
-                'America/Chicago': 'CT',
-                'America/Denver': 'MT',
-                'America/Los_Angeles': 'PT',
-                'Europe/London': 'GMT',
-                'Europe/Paris': 'CET',
-                'Europe/Berlin': 'CET',
-                'Australia/Sydney': 'AEST',
-                'Asia/Tokyo': 'JST',
-                'Asia/Kolkata': 'IST',
-                'Asia/Singapore': 'SGT',
-                'UTC': 'UTC'
-            };
-            return tzMap[tz] || tz.split('/').pop();
-        }
-
-        function generateEmailHTML(availability, tzAbbrev) {
-            // Format exactly as requested
+        function generateEmailHTML(availability, service) {
+            const tzAbbrev = TZ_ABBREV[selectedTimezone] || selectedTimezone.split('/').pop();
             let html = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p>`;
             html += '<ul style="margin: 15px 0; list-style: none; padding: 0;">';
-            
             for (const [date, slots] of Object.entries(availability)) {
-                const times = slots.map(slot => `<a href="${slot.link}" style="color: #2563eb; text-decoration: none;">${slot.time}</a>`).join(', ');
-                html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+                if (service.supportsDirectLinks && slots[0].link) {
+                    const times = slots.map(slot => `<a href="${slot.link}" style="color: #2563eb; text-decoration: none;">${slot.time}</a>`).join(', ');
+                    html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+                } else {
+                    const times = slots.map(slot => slot.time).join(', ');
+                    html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+                }
             }
-            
             html += '</ul>';
             return html;
         }
 
-        function findAvailability() {
+        async function findAvailability() {
             const linkInput = document.getElementById('bookingLink').value.trim();
-            const tzInput = document.getElementById('timezone').value.trim();
             const errorEl = document.getElementById('errorMessage');
             const outputEl = document.getElementById('outputSection');
+            const btn = document.getElementById('generateBtn');
 
             errorEl.classList.remove('show');
-            errorEl.textContent = '';
-
-            if (!linkInput) {
-                showError('Please paste a booking link');
-                return;
-            }
-
-            if (!tzInput) {
-                showError('Please enter a timezone');
-                return;
-            }
+            if (!linkInput) { showError('Please paste a booking link'); return; }
+            if (!selectedTimezone) { showError('Please select a timezone'); return; }
 
             try {
                 const service = detectService(linkInput);
-                if (!service) {
-                    showError('❌ Unrecognized booking service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar');
-                    return;
-                }
+                if (!service) { showError('❌ Unrecognized service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar'); return; }
+
+                btn.disabled = true;
+                btn.textContent = 'Scraping availability...';
 
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 
-                const availability = generateMockAvailability(service, tomorrow, linkInput);
+                const availability = await simulateScraping(linkInput, tomorrow);
+                const withLinks = buildAvailabilityWithLinks(availability, service, linkInput);
                 
-                if (Object.keys(availability).length === 0) {
-                    showError('No availability found.');
-                    return;
-                }
+                if (!Object.keys(withLinks).length) { showError('No availability found.'); btn.disabled = false; btn.textContent = 'Generate Email'; return; }
 
-                const tzAbbrev = getTimezoneAbbreviation(tzInput);
-                const emailHTML = generateEmailHTML(availability, tzAbbrev);
-                
+                const emailHTML = generateEmailHTML(withLinks, service);
                 document.getElementById('emailPreview').innerHTML = emailHTML;
                 document.currentEmailHTML = emailHTML;
-                
                 outputEl.classList.add('show');
                 document.getElementById('successMessage').classList.add('show');
                 
-                setTimeout(() => {
-                    document.getElementById('successMessage').classList.remove('show');
-                }, 3000);
-
+                btn.disabled = false;
+                btn.textContent = 'Generate Email';
+                
+                setTimeout(() => { document.getElementById('successMessage').classList.remove('show'); }, 5000);
             } catch (e) {
                 showError('Error: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Generate Email';
             }
         }
 
@@ -559,27 +545,20 @@
 
         function copyEmailHTML() {
             if (!document.currentEmailHTML) return;
-            
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = document.currentEmailHTML;
-            
-            const html = document.currentEmailHTML;
-            const text = tempDiv.textContent;
-            
             navigator.clipboard.write([
                 new ClipboardItem({
-                    'text/html': new Blob([html], { type: 'text/html' }),
-                    'text/plain': new Blob([text], { type: 'text/plain' })
+                    'text/html': new Blob([document.currentEmailHTML], { type: 'text/html' }),
+                    'text/plain': new Blob([tempDiv.textContent], { type: 'text/plain' })
                 })
             ]).then(() => {
                 const btn = event.target;
-                const originalText = btn.textContent;
                 btn.textContent = '✓ Copied!';
                 btn.style.background = 'var(--success)';
                 btn.style.color = 'white';
-                
                 setTimeout(() => {
-                    btn.textContent = originalText;
+                    btn.textContent = 'Copy Email';
                     btn.style.background = '';
                     btn.style.color = '';
                 }, 2000);
@@ -589,28 +568,19 @@
                 window.getSelection().removeAllRanges();
                 window.getSelection().addRange(range);
                 document.execCommand('copy');
-                
-                const btn = event.target;
-                btn.textContent = '✓ Copied!';
-                btn.style.background = 'var(--success)';
-                btn.style.color = 'white';
-                
-                setTimeout(() => {
-                    btn.textContent = 'Copy Email';
-                    btn.style.background = '';
-                    btn.style.color = '';
-                }, 2000);
             });
         }
 
         function resetForm() {
             document.getElementById('bookingLink').value = '';
-            document.getElementById('timezone').value = '';
+            document.getElementById('timezoneSearch').value = '';
+            selectedTimezone = null;
             document.getElementById('outputSection').classList.remove('show');
             document.getElementById('bookingLink').focus();
         }
 
         window.addEventListener('load', () => {
+            initTimezoneDropdown();
             document.getElementById('bookingLink').focus();
         });
     </script>
