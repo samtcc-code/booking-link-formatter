@@ -3,266 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meeting Availability Scheduler</title>
+    <title>Meeting Availability — The Continuity Co.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --success: #059669;
-            --error: #dc2626;
-            --surface: #ffffff;
-            --border: #e2e8f0;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --radius: 12px;
+            --background: hsl(0 0% 100%);
+            --foreground: hsl(230 25% 14%);
+            --card: hsl(240 20% 98%);
+            --muted: hsl(240 15% 95%);
+            --muted-foreground: hsl(230 10% 48%);
+            --border: hsl(240 12% 92%);
+            --primary: hsl(260 60% 65%);
+            --accent-coral: hsl(3 80% 58%);
+            --accent-rose: hsl(344 48% 50%);
+            --accent-magenta: hsl(301 50% 45%);
         }
+        
+        html { scroll-behavior: smooth; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--foreground);
             line-height: 1.6;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 40px; animation: slideDown 0.6s ease-out; }
-        header h1 {
+        
+        .container { 
+            max-width: 48rem;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        header {
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: var(--accent-coral);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+            animation: fadeInDown 0.8s ease-out 0.1s forwards;
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', serif;
             font-size: 2.5rem;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+            opacity: 0;
+            animation: fadeInDown 0.8s ease-out 0.2s forwards;
         }
-        header p { color: var(--text-light); font-size: 1.1rem; }
+        
+        header p {
+            font-size: 1.125rem;
+            color: var(--muted-foreground);
+            max-width: 28rem;
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeInDown 0.8s ease-out 0.3s forwards;
+        }
+        
+        .rainbow-line {
+            height: 2px;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                hsl(243 50% 45%) 20%,
+                hsl(301 50% 45%) 40%,
+                hsl(344 48% 50%) 60%,
+                hsl(3 80% 58%) 80%,
+                transparent 100%
+            );
+            width: 80px;
+            margin: 2rem auto;
+        }
+        
         .input-section {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            margin-bottom: 30px;
-            animation: slideUp 0.6s ease-out;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            margin: 3rem 0;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
         }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text); font-size: 0.95rem; }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-group:last-of-type {
+            margin-bottom: 2.5rem;
+        }
+        
+        label {
+            display: block;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+        
         input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            background: var(--background);
+            color: var(--foreground);
             transition: all 0.3s ease;
-            background: #f8fafc;
         }
+        
         input:focus {
             outline: none;
-            border-color: var(--primary);
-            background: var(--surface);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--accent-coral);
+            box-shadow: 0 0 0 3px hsl(3 80% 58% / 0.1);
         }
-        input::placeholder { color: #cbd5e1; }
+        
+        input::placeholder {
+            color: var(--muted-foreground);
+        }
+        
         .tz-search-container {
             position: relative;
             width: 100%;
         }
+        
         .tz-dropdown {
             display: none;
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 2px solid var(--border);
+            background: var(--background);
+            border: 1px solid var(--border);
             border-top: none;
-            border-radius: 0 0 var(--radius) var(--radius);
-            max-height: 250px;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 240px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
+        
         .tz-dropdown.show { display: block; }
+        
         .tz-option {
-            padding: 12px 14px;
+            padding: 0.875rem 1rem;
             cursor: pointer;
-            color: var(--text);
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
+            color: var(--foreground);
+            border-bottom: 1px solid var(--muted);
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
         }
+        
         .tz-option:hover {
-            background: #f0f4f8;
+            background: var(--muted);
+            padding-left: 1.25rem;
         }
+        
         .tz-option.selected {
-            background: var(--primary);
-            color: white;
+            background: hsl(3 80% 58% / 0.1);
+            color: var(--accent-coral);
+            font-weight: 500;
         }
+        
         button {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, hsl(301 45% 50%) 0%, hsl(344 48% 52%) 50%, hsl(3 80% 58%) 100%);
             color: white;
             border: none;
-            border-radius: var(--radius);
+            border-radius: 9999px;
+            font-family: 'Inter', sans-serif;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 12px hsl(344 50% 50% / 0.2);
+            letter-spacing: -0.01em;
         }
-        button:hover {
+        
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 24px hsl(344 50% 50% / 0.3);
         }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.8;
             cursor: not-allowed;
             transform: none;
         }
-        button:active { transform: translateY(0); }
-        .output-section { display: none; animation: fadeIn 0.4s ease-out; }
-        .output-section.show { display: block; }
-        .preview-section {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            margin-bottom: 30px;
-        }
-        .preview-title {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        .email-preview {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 25px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-        }
-        .email-preview p { margin: 0 0 20px 0; font-size: 14px; color: #333; }
-        .email-preview ul { list-style: none; padding: 0; margin: 0; }
-        .email-preview li { margin: 12px 0; padding-left: 0; font-size: 14px; color: #333; }
-        .email-preview a { color: #2563eb; text-decoration: none; font-weight: normal; }
-        .email-preview a:hover { text-decoration: underline; }
+        
         .error-message {
-            background: #fee2e2;
-            border: 2px solid var(--error);
-            color: var(--error);
-            padding: 16px;
-            border-radius: var(--radius);
-            margin-top: 20px;
+            background: hsl(0 84% 60% / 0.1);
+            border: 1px solid hsl(0 84% 60% / 0.3);
+            color: var(--foreground);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-top: 1.5rem;
             display: none;
-        }
-        .error-message.show { display: block; }
-        .success-message {
-            background: #d1fae5;
-            border: 2px solid var(--success);
-            color: var(--success);
-            padding: 16px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            display: none;
-        }
-        .success-message.show { display: block; }
-        .info-box {
-            background: #eff6ff;
-            border-left: 4px solid var(--primary);
-            padding: 14px;
-            border-radius: 6px;
-            margin-bottom: 20px;
             font-size: 0.95rem;
-            color: var(--text);
         }
-        .info-box strong { color: var(--primary); }
+        
+        .error-message.show {
+            display: block;
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        .output-section {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .output-section.show {
+            display: block;
+        }
+        
+        .success-message {
+            background: hsl(120 60% 50% / 0.1);
+            border: 1px solid hsl(120 60% 50% / 0.3);
+            color: var(--foreground);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 2rem;
+            display: none;
+            font-size: 0.95rem;
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .preview-section {
+            margin: 3rem 0;
+        }
+        
+        .preview-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted-foreground);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .email-preview {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--foreground);
+            margin-bottom: 2rem;
+        }
+        
+        .email-preview p {
+            margin-bottom: 1.5rem;
+            font-size: 1.0625rem;
+        }
+        
+        .email-preview p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .email-preview ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .email-preview li {
+            margin: 1rem 0;
+            padding-left: 0;
+            font-size: 1rem;
+        }
+        
+        .email-preview a {
+            color: var(--accent-coral);
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+        
+        .email-preview a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+        
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 1rem;
         }
+        
         .btn-secondary {
-            padding: 12px;
-            background: var(--surface);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            border-radius: var(--radius);
+            padding: 0.875rem 1.5rem;
+            background: var(--background);
+            color: var(--accent-coral);
+            border: 2px solid var(--accent-coral);
+            border-radius: 9999px;
+            font-family: 'Inter', sans-serif;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.95rem;
         }
+        
         .btn-secondary:hover {
-            background: var(--primary);
+            background: var(--accent-coral);
             color: white;
+            transform: translateY(-2px);
         }
-        .loading { text-align: center; color: var(--text-light); margin: 20px 0; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .footer { text-align: center; margin-top: 40px; color: var(--text-light); font-size: 0.9rem; }
-        @media (max-width: 600px) {
-            header h1 { font-size: 1.8rem; }
-            .action-buttons { grid-template-columns: 1fr; }
-            .input-section, .preview-section { padding: 20px; }
+        
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+            color: var(--muted-foreground);
+            font-size: 0.95rem;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            header {
+                padding: 4rem 1.5rem 3rem;
+            }
+            
+            .input-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .email-preview {
+                padding: 2rem 1.5rem;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            label {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📅 Meeting Availability</h1>
-            <p>Generate email-ready meeting times</p>
+            <div class="logo">↻</div>
+            <h1>Meeting Availability</h1>
+            <p>Suggest real times from any booking link. Premium, effortless scheduling for founders.</p>
+            <div class="rainbow-line"></div>
         </header>
+
         <div class="input-section">
-            <div class="info-box">
-                <strong>Supported with links:</strong> Calendly ✓ Cal.com ✓ | Without links: OneCal.io, Fantastical, Google Calendar
-            </div>
             <div class="form-group">
-                <label for="bookingLink">Booking link:</label>
+                <label for="bookingLink">Booking Link</label>
                 <input 
                     type="text"
                     id="bookingLink" 
-                    placeholder="https://calendly.com/... or https://cal.com/..."
+                    placeholder="calendly.com/... or cal.com/..."
                 />
             </div>
+
             <div class="form-group">
-                <label for="timezoneSearch">Recipient's timezone:</label>
+                <label for="timezoneSearch">Recipient's Timezone</label>
                 <div class="tz-search-container">
                     <input 
                         type="text"
                         id="timezoneSearch"
-                        placeholder="Search timezone... (e.g., New York, London, Tokyo)"
+                        placeholder="New York, London, Tokyo..."
                         autocomplete="off"
                     />
                     <div class="tz-dropdown" id="tzDropdown"></div>
                 </div>
             </div>
+
             <button id="generateBtn" onclick="findAvailability()">Generate Email</button>
             <div class="error-message" id="errorMessage"></div>
         </div>
+
         <div class="output-section" id="outputSection">
-            <div class="success-message" id="successMessage">✓ Email preview ready! Scraping took ~2 seconds to fetch real availability.</div>
+            <div class="success-message" id="successMessage">
+                ✓ Your availability is ready. Copy and paste into your email.
+            </div>
+
             <div class="preview-section">
-                <div class="preview-title">📧 Copy and paste this into your email</div>
+                <span class="preview-label">Email Preview</span>
                 <div class="email-preview" id="emailPreview"></div>
+                
                 <div class="action-buttons">
-                    <button class="btn-secondary" onclick="copyEmailHTML()">📋 Copy Email</button>
+                    <button class="btn-secondary" onclick="copyEmailHTML()">Copy</button>
                     <button class="btn-secondary" onclick="resetForm()">Clear</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="footer">
-        <p>Works with Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar</p>
-    </div>
+
+    <footer>
+        <p>The Continuity Co. — Premium founder tools for real work.</p>
+    </footer>
+
     <script>
         const TIMEZONES = [
             'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
@@ -296,7 +496,6 @@
 
         let selectedTimezone = null;
 
-        // Initialize timezone dropdown
         function initTimezoneDropdown() {
             const input = document.getElementById('timezoneSearch');
             const dropdown = document.getElementById('tzDropdown');
@@ -404,9 +603,7 @@
             return offsetMap[timezone] || '-05:00';
         }
 
-        // Simulate fetching real availability (2 second delay to show it's being scraped)
         async function simulateScraping(url, startDate) {
-            // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 2000));
             
             const times = ['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'];
@@ -420,7 +617,7 @@
                 if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                     const dateKey = formatDateForKey(currentDate);
                     const dayTimes = [];
-                    const selectedTimes = [times[1], times[7], times[4]]; // Realistic times
+                    const selectedTimes = [times[1], times[7], times[4]];
                     
                     for (let time of selectedTimes) {
                         if (slotsAdded < 12) {
@@ -481,14 +678,14 @@
         function generateEmailHTML(availability, service) {
             const tzAbbrev = TZ_ABBREV[selectedTimezone] || selectedTimezone.split('/').pop();
             let html = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p>`;
-            html += '<ul style="margin: 15px 0; list-style: none; padding: 0;">';
+            html += '<ul>';
             for (const [date, slots] of Object.entries(availability)) {
                 if (service.supportsDirectLinks && slots[0].link) {
-                    const times = slots.map(slot => `<a href="${slot.link}" style="color: #2563eb; text-decoration: none;">${slot.time}</a>`).join(', ');
-                    html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+                    const times = slots.map(slot => `<a href="${slot.link}">${slot.time}</a>`).join(', ');
+                    html += `<li>* ${date}: ${times}</li>`;
                 } else {
                     const times = slots.map(slot => slot.time).join(', ');
-                    html += `<li style="margin: 10px 0; font-size: 14px;">* ${date}: ${times}</li>`;
+                    html += `<li>* ${date}: ${times}</li>`;
                 }
             }
             html += '</ul>';
@@ -507,7 +704,7 @@
 
             try {
                 const service = detectService(linkInput);
-                if (!service) { showError('❌ Unrecognized service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar'); return; }
+                if (!service) { showError('Unrecognized service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar'); return; }
 
                 btn.disabled = true;
                 btn.textContent = 'Scraping availability...';
@@ -554,12 +751,12 @@
                 })
             ]).then(() => {
                 const btn = event.target;
-                btn.textContent = '✓ Copied!';
-                btn.style.background = 'var(--success)';
-                btn.style.color = 'white';
+                btn.textContent = '✓ Copied';
+                btn.style.borderColor = 'hsl(120 60% 50%)';
+                btn.style.color = 'hsl(120 60% 50%)';
                 setTimeout(() => {
-                    btn.textContent = 'Copy Email';
-                    btn.style.background = '';
+                    btn.textContent = 'Copy';
+                    btn.style.borderColor = '';
                     btn.style.color = '';
                 }, 2000);
             }).catch(() => {
