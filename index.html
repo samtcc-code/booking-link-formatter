@@ -96,13 +96,15 @@
         }
         
         .input-section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 2rem;
-    margin-top: 1.5rem;
-    margin-bottom: 3rem;
-}
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+        }
         
         .form-group {
             margin-bottom: 2rem;
@@ -232,6 +234,16 @@
         .error-message.show {
             display: block;
             animation: fadeInUp 0.3s ease-out;
+        }
+
+        .error-message a {
+            color: var(--accent-coral);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .error-message a:hover {
+            text-decoration: underline;
         }
         
         .output-section {
@@ -443,7 +455,7 @@
 
         <div class="output-section" id="outputSection">
             <div class="success-message" id="successMessage">
-                ✓ Your availability is ready. Copy and paste into your email.
+                ✓ Real availability extracted. Times converted to recipient's timezone.
             </div>
 
             <div class="preview-section">
@@ -463,6 +475,10 @@
     </footer>
 
     <script>
+        // Set this to your Railway server URL once deployed
+        // Example: https://booking-scraper-prod.up.railway.app
+        const SCRAPER_URL = 'https://booking-scraper-production-5293.up.railway.app';
+        
         const TIMEZONES = [
             'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
             'America/Anchorage', 'Pacific/Honolulu', 'Europe/London', 'Europe/Paris',
@@ -485,6 +501,18 @@
             'Pacific/Auckland': 'NZDT', 'Pacific/Fiji': 'FJT'
         };
 
+        const TZ_OFFSETS = {
+            'America/New_York': -5, 'America/Chicago': -6, 'America/Denver': -7,
+            'America/Los_Angeles': -8, 'America/Anchorage': -9, 'Pacific/Honolulu': -10,
+            'Europe/London': 0, 'Europe/Paris': 1, 'Europe/Berlin': 1,
+            'Europe/Madrid': 1, 'Europe/Rome': 1, 'Europe/Amsterdam': 1,
+            'Europe/Moscow': 3, 'Asia/Dubai': 4, 'Asia/Kolkata': 5.5,
+            'Asia/Bangkok': 7, 'Asia/Hong_Kong': 8, 'Asia/Singapore': 8,
+            'Asia/Tokyo': 9, 'Asia/Seoul': 9, 'Australia/Sydney': 11,
+            'Australia/Melbourne': 11, 'Australia/Brisbane': 10,
+            'Pacific/Auckland': 13, 'Pacific/Fiji': 12
+        };
+
         const services = {
             calendly: { domains: ['calendly.com'], name: 'Calendly', supportsDirectLinks: true },
             calcom: { domains: ['cal.com'], name: 'Cal.com', supportsDirectLinks: true },
@@ -494,6 +522,109 @@
         };
 
         let selectedTimezone = null;
+
+        // TIMEZONE CONVERSION
+        function convertTime(timeStr, fromTz, toTz) {
+            const [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            const fromOffset = TZ_OFFSETS[fromTz] || 0;
+            const toOffset = TZ_OFFSETS[toTz] || 0;
+            const timeDiff = toOffset - fromOffset;
+            
+            hours += timeDiff;
+            if (hours < 0) hours += 24;
+            if (hours >= 24) hours -= 24;
+            
+            const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+            const displayPeriod = hours >= 12 ? 'PM' : 'AM';
+            
+            return `${displayHours}:${String(minutes).padStart(2, '0')} ${displayPeriod}`;
+        }
+
+        // REAL SCRAPING via Railway Server
+        async function scrapeBookingPage(url) {
+            try {
+                if (!SCRAPER_URL || SCRAPER_URL.includes('your-railway')) {
+                    return { 
+                        times: null, 
+                        timezone: null, 
+                        success: false, 
+                        error: 'Scraper server not configured. Please set SCRAPER_URL to your Railway deployment.' 
+                    };
+                }
+
+                const response = await fetch(`${SCRAPER_URL}/scrape`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    return { 
+                        times: null, 
+                        timezone: null, 
+                        success: false, 
+                        error: data.error || 'Failed to scrape booking page'
+                    };
+                }
+                
+                return { 
+                    times: data.times || [], 
+                    timezone: data.timezone || 'America/Los_Angeles', 
+                    success: true 
+                };
+            } catch (error) {
+                return { 
+                    times: null, 
+                    timezone: null, 
+                    success: false, 
+                    error: error.message 
+                };
+            }
+        }
+
+
+
+        function groupTimesByDate(times) {
+            const grouped = {};
+            const today = new Date();
+            
+            let dayIndex = 0;
+            let timesAdded = 0;
+            const targetSlots = 12;
+            
+            while (timesAdded < targetSlots && dayIndex < 14) {
+                const currentDate = new Date(today);
+                currentDate.setDate(currentDate.getDate() + dayIndex + 1);
+                
+                const dayOfWeek = currentDate.getDay();
+                
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    const dateKey = formatDate(currentDate);
+                    
+                    const timesPerDay = Math.min(4, times.length - timesAdded);
+                    if (timesPerDay > 0) {
+                        grouped[dateKey] = times.slice(timesAdded, timesAdded + timesPerDay);
+                        timesAdded += timesPerDay;
+                    }
+                }
+                
+                dayIndex++;
+            }
+            
+            return grouped;
+        }
+
+        function formatDate(date) {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
 
         function initTimezoneDropdown() {
             const input = document.getElementById('timezoneSearch');
@@ -561,33 +692,38 @@
             return match ? { path: match[1] } : null;
         }
 
-        function generateCalendlyDirectLink(username, event, date, time, timezone) {
+        function generateCalendlyDirectLink(username, event, date, time, founderTz, recipientTz) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
+            
             const [timeStr, period] = time.split(' ');
             let [hours, minutes] = timeStr.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
-            const offset = getUTCOffset(timezone);
+            
+            const offset = getUTCOffsetString(founderTz);
             const pathTime = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}:00${offset}`;
             const queryTime = `${String(hours).padStart(2, '0')}%3A${String(minutes || 0).padStart(2, '0')}`;
+            
             return `https://calendly.com/${username}/${event}/${pathTime}?date=${year}-${month}-${day}&time=${queryTime}&month=${year}-${month}`;
         }
 
-        function generateCalcomDirectLink(path, date, time) {
+        function generateCalcomDirectLink(path, date, time, founderTz) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
+            
             const [timeStr, period] = time.split(' ');
             let [hours, minutes] = timeStr.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
+            
             const slotTime = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}%3A${String(minutes || 0).padStart(2, '0')}%3A00.000Z`;
             return `https://cal.com/${path}?duration=30&month=${year}-${month}&slot=${slotTime}`;
         }
 
-        function getUTCOffset(timezone) {
+        function getUTCOffsetString(timezone) {
             const offsetMap = {
                 'America/New_York': '-05:00', 'America/Chicago': '-06:00', 'America/Denver': '-07:00',
                 'America/Los_Angeles': '-08:00', 'America/Anchorage': '-09:00', 'Pacific/Honolulu': '-10:00',
@@ -599,54 +735,26 @@
                 'Australia/Melbourne': '+11:00', 'Australia/Brisbane': '+10:00', 'Pacific/Auckland': '+13:00',
                 'Pacific/Fiji': '+12:00'
             };
-            return offsetMap[timezone] || '-05:00';
+            return offsetMap[timezone] || '-08:00';
         }
 
-        async function simulateScraping(url, startDate) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const times = ['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'];
+        function buildAvailabilityWithLinks(groupedTimes, service, bookingLink, founderTz) {
             const availability = {};
-            let currentDate = new Date(startDate);
-            let businessDaysProcessed = 0;
-            let slotsAdded = 0;
-
-            while (businessDaysProcessed < 4 && slotsAdded < 12) {
-                const dayOfWeek = currentDate.getDay();
-                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                    const dateKey = formatDateForKey(currentDate);
-                    const dayTimes = [];
-                    const selectedTimes = [times[1], times[7], times[4]];
-                    
-                    for (let time of selectedTimes) {
-                        if (slotsAdded < 12) {
-                            dayTimes.push({ time: time, link: null });
-                            slotsAdded++;
-                        }
-                    }
-                    
-                    if (dayTimes.length > 0) availability[dateKey] = dayTimes;
-                    businessDaysProcessed++;
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-
-            return availability;
-        }
-
-        function buildAvailabilityWithLinks(availability, service, bookingLink) {
+            
             if (service.supportsDirectLinks) {
                 if (service.name === 'Calendly') {
                     const parsed = parseCalendlyUrl(bookingLink);
                     if (parsed) {
                         let dateIndex = 0;
-                        for (const dateKey in availability) {
-                            const slots = availability[dateKey];
+                        for (const dateKey in groupedTimes) {
+                            const slots = groupedTimes[dateKey];
                             const date = new Date();
                             date.setDate(date.getDate() + 1 + dateIndex);
-                            for (let i = 0; i < slots.length; i++) {
-                                slots[i].link = generateCalendlyDirectLink(parsed.username, parsed.event, date, slots[i].time, selectedTimezone);
-                            }
+                            
+                            availability[dateKey] = slots.map(time => ({
+                                originalTime: time,
+                                link: generateCalendlyDirectLink(parsed.username, parsed.event, date, time, founderTz, selectedTimezone)
+                            }));
                             dateIndex++;
                         }
                     }
@@ -654,39 +762,48 @@
                     const parsed = parseCalcomUrl(bookingLink);
                     if (parsed) {
                         let dateIndex = 0;
-                        for (const dateKey in availability) {
-                            const slots = availability[dateKey];
+                        for (const dateKey in groupedTimes) {
+                            const slots = groupedTimes[dateKey];
                             const date = new Date();
                             date.setDate(date.getDate() + 1 + dateIndex);
-                            for (let i = 0; i < slots.length; i++) {
-                                slots[i].link = generateCalcomDirectLink(parsed.path, date, slots[i].time);
-                            }
+                            
+                            availability[dateKey] = slots.map(time => ({
+                                originalTime: time,
+                                link: generateCalcomDirectLink(parsed.path, date, time, founderTz)
+                            }));
                             dateIndex++;
                         }
                     }
                 }
+            } else {
+                for (const dateKey in groupedTimes) {
+                    availability[dateKey] = groupedTimes[dateKey].map(time => ({
+                        originalTime: time,
+                        link: null
+                    }));
+                }
             }
+            
             return availability;
         }
 
-        function formatDateForKey(date) {
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            return date.toLocaleDateString('en-US', options);
-        }
-
-        function generateEmailHTML(availability, service) {
-            const tzAbbrev = TZ_ABBREV[selectedTimezone] || selectedTimezone.split('/').pop();
+        function generateEmailHTML(availability, founderTz, recipientTz) {
+            const tzAbbrev = TZ_ABBREV[recipientTz] || recipientTz.split('/').pop();
             let html = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p>`;
             html += '<ul>';
+            
             for (const [date, slots] of Object.entries(availability)) {
-                if (service.supportsDirectLinks && slots[0].link) {
-                    const times = slots.map(slot => `<a href="${slot.link}">${slot.time}</a>`).join(', ');
-                    html += `<li>* ${date}: ${times}</li>`;
-                } else {
-                    const times = slots.map(slot => slot.time).join(', ');
-                    html += `<li>* ${date}: ${times}</li>`;
-                }
+                const convertedTimes = slots.map(slot => {
+                    const convertedTime = convertTime(slot.originalTime, founderTz, recipientTz);
+                    if (slot.link) {
+                        return `<a href="${slot.link}">${convertedTime}</a>`;
+                    }
+                    return convertedTime;
+                });
+                
+                html += `<li>* ${date}: ${convertedTimes.join(', ')}</li>`;
             }
+            
             html += '</ul>';
             return html;
         }
@@ -703,20 +820,31 @@
 
             try {
                 const service = detectService(linkInput);
-                if (!service) { showError('Unrecognized service. Supported: Calendly, Cal.com, OneCal.io, Fantastical, Google Calendar'); return; }
+                if (!service) { showError('Unrecognized service. Supported: Calendly, Cal.com, OneCal.io'); return; }
 
                 btn.disabled = true;
                 btn.textContent = 'Scraping availability...';
 
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
+                const scrapingResult = await scrapeBookingPage(linkInput);
                 
-                const availability = await simulateScraping(linkInput, tomorrow);
-                const withLinks = buildAvailabilityWithLinks(availability, service, linkInput);
-                
-                if (!Object.keys(withLinks).length) { showError('No availability found.'); btn.disabled = false; btn.textContent = 'Generate Email'; return; }
+                if (!scrapingResult.success || !scrapingResult.times || scrapingResult.times.length === 0) {
+                    showScrapingError(linkInput, service);
+                    btn.disabled = false;
+                    btn.textContent = 'Generate Email';
+                    return;
+                }
 
-                const emailHTML = generateEmailHTML(withLinks, service);
+                const groupedTimes = groupTimesByDate(scrapingResult.times);
+                const availability = buildAvailabilityWithLinks(groupedTimes, service, linkInput, scrapingResult.timezone);
+                
+                if (!Object.keys(availability).length) { 
+                    showScrapingError(linkInput, service);
+                    btn.disabled = false;
+                    btn.textContent = 'Generate Email';
+                    return;
+                }
+
+                const emailHTML = generateEmailHTML(availability, scrapingResult.timezone, selectedTimezone);
                 document.getElementById('emailPreview').innerHTML = emailHTML;
                 document.currentEmailHTML = emailHTML;
                 outputEl.classList.add('show');
@@ -733,9 +861,20 @@
             }
         }
 
-        function showError(message) {
+        function showScrapingError(url, service) {
+            let message = `Couldn't extract availability from ${service.name}. `;
+            message += `<a href="${url}" target="_blank">Visit your booking page directly</a> to share availability, `;
+            message += `or ask the recipient to use your main booking link.`;
+            showError(message, true);
+        }
+
+        function showError(message, isHTML = false) {
             const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
+            if (isHTML) {
+                errorEl.innerHTML = message;
+            } else {
+                errorEl.textContent = message;
+            }
             errorEl.classList.add('show');
         }
 
