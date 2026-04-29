@@ -782,6 +782,7 @@
                 let emailHTML = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p><ul>`;
 
                 const service = bookingLink ? detectService(bookingLink) : null;
+                let hasDirectLinks = false;
 
                 for (const [dateKey, slots] of Object.entries(grouped)) {
                     const times = slots.map(slot => {
@@ -803,6 +804,7 @@
 
                             if (link) {
                                 html = `<a href="${link}">${slot.convertedTime}</a>`;
+                                hasDirectLinks = true;
                             }
                         }
                         return html;
@@ -812,6 +814,12 @@
                 }
 
                 emailHTML += '</ul>';
+
+                // Add fallback message for services without direct links
+                if (bookingLink && service && !service.supportsDirectLinks) {
+                    emailHTML += `<p>You can book any of those times on my calendar, or feel free to book any other time that works. Also happy to use your link or any other method.</p>`;
+                    emailHTML += `<p><a href="${bookingLink}">${bookingLink}</a></p>`;
+                }
 
                 document.getElementById('emailPreview').innerHTML = emailHTML;
                 document.currentEmailHTML = emailHTML;
