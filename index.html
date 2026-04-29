@@ -295,15 +295,16 @@
             border: 1px solid var(--border);
             border-radius: 0.5rem;
             padding: 2.5rem;
-            font-size: 1rem;
-            line-height: 1.7;
+            font-size: 0.95rem;
+            line-height: 1.6;
             color: var(--foreground);
             margin-bottom: 2rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         .email-preview p {
-            margin-bottom: 1.5rem;
-            font-size: 1.0625rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
         
         .email-preview p:last-child {
@@ -317,15 +318,14 @@
         }
         
         .email-preview li {
-            margin: 1rem 0;
+            margin: 0.5rem 0;
             padding-left: 0;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         
         .email-preview a {
-            color: var(--accent-coral);
+            color: #0066cc;
             text-decoration: none;
-            font-weight: 500;
             transition: opacity 0.3s ease;
         }
         
@@ -461,10 +461,10 @@
 
             <div class="form-group">
                 <label for="availableTimes">Available Times</label>
-                <label class="help-text">Paste the times you see on your calendar. Format: "Monday 10:00 AM, 2:30 PM" (one day per line)</label>
+                <label class="help-text">Paste times with dates first. Format: "April 30 6:30 PM, 7PM" (one date per line, times separated by commas)</label>
                 <textarea 
                     id="availableTimes"
-                    placeholder="Monday 10:00 AM, 2:30 PM&#10;Tuesday 9:00 AM, 3:00 PM&#10;Wednesday 1:00 PM, 4:30 PM"
+                    placeholder="April 30 6:30 PM, 7PM&#10;May 1 3 PM, 5:30 PM, 7:30 PM&#10;May 4 12:30 PM, 4 PM, 4:30 PM"
                 ></textarea>
             </div>
 
@@ -699,52 +699,91 @@
             if (!timesInput) { showError('Please paste your available times'); return; }
 
             try {
-                // Parse times from input
+                // Parse times from input: "April 30 6:30 PM, 7PM"
                 const lines = timesInput.split('\n').filter(l => l.trim());
-                const availability = {};
-                let today = new Date();
-                let dayOffset = 0;
+                const availability = [];
 
                 lines.forEach(line => {
-                    const dayMatch = line.match(/^([A-Za-z]+)/);
-                    const dayName = dayMatch ? dayMatch[1] : null;
-                    const times = line.match(/(\d{1,2}:\d{2}\s*(?:am|pm))/gi) || [];
+                    // Match date (Month Day) and times
+                    const dateMatch = line.match(/^([A-Za-z]+)\s+(\d{1,2})/);
+                    const timeMatches = line.match(/(\d{1,2}(?::\d{2})?)\s*(?:am|pm)?/gi);
 
-                    if (dayName && times.length > 0) {
-                        // Find next occurrence of this day
-                        const dayOfWeekNum = new Date(dayName + ' 2025').getDay();
-                        const currentDay = (today.getDay() + dayOffset) % 7;
+                    if (dateMatch && timeMatches) {
+                        const monthStr = dateMatch[1];
+                        const dayStr = dateMatch[2];
                         
-                        const daysAhead = (dayOfWeekNum - currentDay + 7) % 7 || 7;
-                        const targetDate = new Date(today);
-                        targetDate.setDate(targetDate.getDate() + daysAhead);
+                        // Extract times from the line (everything after the date)
+                        const timesStr = line.substring(line.indexOf(dayStr) + dayStr.length).trim();
+                        const times = timesStr.split(',').map(t => t.trim()).filter(t => t);
 
-                        const dateKey = targetDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-                        
-                        availability[dateKey] = times.map(t => {
-                            const convertedTime = convertTime(t, calendarTz, recipientTz);
-                            return {
-                                originalTime: t,
-                                convertedTime: convertedTime,
-                                date: targetDate
-                            };
-                        }).filter(t => t.convertedTime);
+                        // Parse each time and ensure AM/PM
+                        times.forEach(timeStr => {
+                            let normalized = timeStr;
+                            
+                            // Add AM/PM if missing
+                            if (!/(am|pm)/i.test(timeStr)) {
+                                normalized = timeStr + ' PM';
+                            }
+                            
+                            const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i;
+                            const timeMatch = normalized.match(timeRegex);
+                            
+                            if (timeMatch) {
+                                const hour = timeMatch[1];
+                                const minute = timeMatch[2] || '00';
+                                const period = timeMatch[3];
+                                const timeFormatted = `${hour}:${minute} ${period.toUpperCase()}`;
+                                
+                                // Convert time
+                                const convertedTime = convertTime(timeFormatted, calendarTz, recipientTz);
+                                
+                                if (convertedTime) {
+                                    // Create date object for sorting
+                                    const now = new Date();
+                                    const currentYear = now.getFullYear();
+                                    const dateObj = new Date(`${monthStr} ${dayStr}, ${currentYear}`);
+                                    
+                                    // If date is in the past, assume next year
+                                    if (dateObj < now) {
+                                        dateObj.setFullYear(currentYear + 1);
+                                    }
+                                    
+                                    availability.push({
+                                        dateObj: dateObj,
+                                        dateKey: dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
+                                        originalTime: timeFormatted,
+                                        convertedTime: convertedTime
+                                    });
+                                }
+                            }
+                        });
                     }
                 });
 
-                if (Object.keys(availability).length === 0) {
-                    showError('Could not parse times. Check format: "Monday 10:00 AM, 2:30 PM"');
+                if (availability.length === 0) {
+                    showError('Could not parse times. Use format: "April 30 6:30 PM, 7PM"');
                     return;
                 }
+
+                // Sort by date, then by time
+                availability.sort((a, b) => a.dateObj - b.dateObj);
+
+                // Group by date
+                const grouped = {};
+                availability.forEach(item => {
+                    if (!grouped[item.dateKey]) {
+                        grouped[item.dateKey] = [];
+                    }
+                    grouped[item.dateKey].push(item);
+                });
 
                 // Generate email HTML
                 const tzAbbrev = TZ_ABBREV[recipientTz] || recipientTz;
                 let emailHTML = `<p>Do any of these times work for you? All are in ${tzAbbrev}.</p><ul>`;
 
                 const service = bookingLink ? detectService(bookingLink) : null;
-                let dateIndex = 0;
 
-                for (const [dateKey, slots] of Object.entries(availability)) {
+                for (const [dateKey, slots] of Object.entries(grouped)) {
                     const times = slots.map(slot => {
                         let html = slot.convertedTime;
 
@@ -753,12 +792,12 @@
                             if (service.name === 'Calendly') {
                                 const parsed = parseCalendlyUrl(bookingLink);
                                 if (parsed) {
-                                    link = generateCalendlyDirectLink(parsed.username, parsed.event, slot.date, slot.convertedTime);
+                                    link = generateCalendlyDirectLink(parsed.username, parsed.event, slot.dateObj, slot.convertedTime);
                                 }
                             } else if (service.name === 'Cal.com') {
                                 const parsed = parseCalcomUrl(bookingLink);
                                 if (parsed) {
-                                    link = generateCalcomDirectLink(parsed.path, slot.date, slot.convertedTime);
+                                    link = generateCalcomDirectLink(parsed.path, slot.dateObj, slot.convertedTime);
                                 }
                             }
 
@@ -770,7 +809,6 @@
                     });
 
                     emailHTML += `<li>* ${dateKey}: ${times.join(', ')}</li>`;
-                    dateIndex++;
                 }
 
                 emailHTML += '</ul>';
